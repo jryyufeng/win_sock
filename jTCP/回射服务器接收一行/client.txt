@@ -1,0 +1,74 @@
+#include "stdafx.h"
+#include <iostream>
+#include <string>
+#include <Winsock2.h>
+#pragma comment(lib, "WS2_32")
+using namespace std;
+
+int main()
+{
+    //加载socket库函数
+    WORD wVersionRequested;
+    WSADATA wsaData;
+    int err;
+    wVersionRequested = MAKEWORD( 1, 1 );
+    err = WSAStartup( wVersionRequested, &wsaData );
+    if ( err != 0 )
+    {
+        cout<<"初始化Socket失败！"<<endl;
+        return 0;
+    }
+    if ( LOBYTE( wsaData.wVersion ) != 1 ||
+            HIBYTE( wsaData.wVersion ) != 1 )
+    {
+        cout<<"初始化Socket失败！"<<endl;
+        WSACleanup();
+        return 0;
+    }
+    //创建套接字
+    SOCKET sockClient = socket(AF_INET,SOCK_STREAM,0) ;
+
+    SOCKADDR_IN addrSrv;
+    addrSrv.sin_addr.S_un.S_addr=inet_addr("127.0.0.1");
+
+    addrSrv.sin_family = AF_INET;
+
+    addrSrv.sin_port = htons(1234);
+
+    if(connect(sockClient,(SOCKADDR*)&addrSrv,sizeof(SOCKADDR))!=0)
+    {
+        cout<<"连接服务器失败！"<<endl;;
+        WSACleanup();
+        return 0;
+    }
+	char sendBuf[100];
+
+//	cout<<"input：";
+//	cin>>sendBuf;
+//	send(sockClient,sendBuf,100,0);
+//    char recvBuf[100];
+//    recv(sockClient,recvBuf,100,0);
+//    printf("%s.\n",recvBuf);
+
+	while(1)
+	{
+		cout<<"input：";
+		cin>>sendBuf;
+		send(sockClient,sendBuf,100,0);
+		if((strcmp("quit",sendBuf)==0))
+		{
+			cout<<"bye..."<<endl;
+			break;
+		}
+		cout<<"Receving..."<<endl;
+		cout<<sendBuf<<endl;
+		char recvBuf[300];
+    	recv(sockClient,recvBuf,300,0);
+    	printf("%s.\n",recvBuf);
+	}
+	
+
+    closesocket(sockClient);
+    WSACleanup();
+    return 0;
+}
